@@ -1,0 +1,69 @@
+{
+  "version": "2.1.0",
+  "program_name": "FiveM System Optimizer",
+  "optimizations": {
+    "mouse": {
+      "enabled": true,
+      "description": "Otimiza polling rate do mouse para raw input",
+      "polling_rate_hz": 1000
+    },
+    "keyboard": {
+      "enabled": true,
+      "description": "Maximiza response time do teclado",
+      "delay_ms": 0
+    },
+    "power_plan": {
+      "enabled": true,
+      "description": "Define High Performance power plan",
+      "plan": "High Performance"
+    },
+    "game_bar": {
+      "enabled": true,
+      "description": "Desabilita Game Bar e Game DVR do Windows"
+    },
+    "fullscreen_optimizations": {
+      "enabled": true,
+      "description": "Desabilita fullscreen optimizations para Direct3D"
+    },
+    "cpu_performance": {
+      "enabled": true,
+      "description": "Configura CPU para 100% de desempenho",
+      "throttling_percent": 100
+    },
+    "gpu_priority": {
+      "enabled": true,
+      "description": "Eleva prioridade da GPU para jogos"
+    },
+    "usb_power_saving": {
+      "enabled": true,
+      "description": "Desabilita USB Selective Suspend",
+      "timeout_sec": 0
+    },
+    "hpet": {
+      "enabled": true,
+      "description": "Desabilita HPET e configura timer para 0.5ms",
+      "timer_ms": 0.5
+    },
+    "services": {
+      "enabled": true,
+      "description": "Remove serviços desnecessários",
+      "disable_list": [
+        "Ndu",
+        "DiagTrack",
+        "dmwappushservice"
+      ]
+    }
+  },
+  "system": {
+    "admin_required": true,
+    "auto_restart": false,
+    "create_restore_point": true,
+    "backup_registry": true,
+    "log_changes": true
+  },
+  "compatibility": {
+    "min_windows_version": "10",
+    "min_python_version": "3.7",
+    "supported_os": ["Windows 10", "Windows 11"]
+  }
+}
