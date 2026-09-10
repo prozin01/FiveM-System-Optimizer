@@ -31,14 +31,18 @@ echo.
 echo [OK] PyInstaller pronto!
 echo.
 echo [*] Compilando - pode levar alguns minutos...
-python -m PyInstaller --onefile --windowed --name="FiveM-Optimizer" --distpath="dist" --buildpath="build" "GUI-Optimizer.py"
+python -m PyInstaller --onefile --windowed --name="FiveM-Optimizer" GUI-Optimizer.py
 echo.
 if exist "dist\FiveM-Optimizer.exe" (
     echo [OK] SUCESSO! Arquivo criado: dist\FiveM-Optimizer.exe
     echo.
-    echo [*] Abrindo pasta...
+    echo [*] Copiando para pasta principal...
+    copy "dist\FiveM-Optimizer.exe" "FiveM-Optimizer.exe" >nul
+    echo [OK] Arquivo copiado para: FiveM-Optimizer.exe
+    echo.
+    echo [*] Abrindo pasta em 3 segundos...
     timeout /t 3
-    start dist
+    start .
 ) else (
     echo [!] Erro na compilacao!
 )
