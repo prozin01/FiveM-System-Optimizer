@@ -6,8 +6,6 @@ import os
 import ctypes
 import threading
 import math
-from PIL import Image, ImageDraw, ImageTk
-from io import BytesIO
 
 def is_admin():
     try:
@@ -30,29 +28,6 @@ def run_cmd(cmd):
         return True
     except:
         return False
-
-def create_hexagon_logo():
-    """Cria um logo hexagonal azul"""
-    size = 64
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    
-    # Hexágono azul
-    center_x, center_y = size // 2, size // 2
-    radius = size // 3
-    points = []
-    for i in range(6):
-        angle = i * 60 - 90
-        x = center_x + radius * math.cos(math.radians(angle))
-        y = center_y + radius * math.sin(math.radians(angle))
-        points.append((x, y))
-    
-    draw.polygon(points, fill=(33, 150, 243, 255), outline=(100, 200, 255, 255))
-    
-    # Número "X11" no centro
-    draw.text((size//2 - 12, size//2 - 10), "X11", fill=(255, 255, 255, 255))
-    
-    return ImageTk.PhotoImage(img)
 
 def log(msg):
     """Adiciona mensagem ao log"""
@@ -181,14 +156,9 @@ header_frame.pack_propagate(False)
 title_frame = tk.Frame(header_frame, bg=HEADER_COLOR)
 title_frame.pack(side="left", padx=20, pady=15)
 
-# Logo hexágono
-try:
-    logo = create_hexagon_logo()
-    logo_label = tk.Label(title_frame, image=logo, bg=HEADER_COLOR)
-    logo_label.image = logo
-    logo_label.pack(side="left", padx=10)
-except:
-    pass
+# Logo hexágono com caractere Unicode
+logo_label = tk.Label(title_frame, text="◆", fg=ACCENT_BLUE, bg=HEADER_COLOR, font=("Arial", 32, "bold"))
+logo_label.pack(side="left", padx=10)
 
 info_frame = tk.Frame(header_frame, bg=HEADER_COLOR)
 info_frame.pack(side="left", pady=15)
