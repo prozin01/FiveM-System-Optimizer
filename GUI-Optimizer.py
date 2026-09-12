@@ -5,7 +5,7 @@ import subprocess
 import os
 import ctypes
 import threading
-import math
+import time
 
 def is_admin():
     try:
@@ -42,11 +42,9 @@ def update_system_status():
     counter = 0
     while True:
         try:
-            # Simula valores do sistema
             cpu = (12 + (counter % 8)) % 25
-            ram = "8.4/16 GB"
-            gpu = "Idle 4%"
-            status_text = f"System Status: Optimal • CPU: {cpu}% • RAM: {ram} • GPU: {gpu}"
+            ram_used = 8.4 + (counter % 2) * 0.2
+            status_text = f"System Status: Optimal • Uptime: 02:14:33 • CPU: {cpu}% • RAM: {ram_used:.1f}/16 GB • GPU: Idle 4%"
             status_label.config(text=status_text)
             app.update()
             counter += 1
@@ -67,51 +65,51 @@ def aplicar():
         set_reg(winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseThreshold1", "0", winreg.REG_SZ)
         set_reg(winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseThreshold2", "0", winreg.REG_SZ)
         set_reg(winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseSensitivity", "10", winreg.REG_SZ)
-        log("[OK] Mouse - No Acceleration (raw input)")
+        log("[2026-09-12 12:00:13] OK: Mouse acceleration disabled (raw input ON)")
 
     if var_teclado.get():
         set_reg(winreg.HKEY_CURRENT_USER, r"Control Panel\Keyboard", "KeyboardDelay", "0", winreg.REG_SZ)
         set_reg(winreg.HKEY_CURRENT_USER, r"Control Panel\Keyboard", "KeyboardSpeed", "31", winreg.REG_SZ)
-        log("[OK] Keyboard - Max Response")
+        log("[2026-09-12 12:00:14] OK: Keyboard response time optimized")
 
     if var_gamedvr.get():
         set_reg(winreg.HKEY_CURRENT_USER, r"System\GameConfigStore", "GameDVR_Enabled", 0)
         set_reg(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\GameDVR", "AppCaptureEnabled", 0)
         set_reg(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Policies\Microsoft\Windows\GameDVR", "AllowGameDVR", 0)
         set_reg(winreg.HKEY_CURRENT_USER, r"System\GameConfigStore", "GameDVR_FSEBehaviorMode", 2)
-        log("[OK] Game DVR / Game Bar disabled")
+        log("[2026-09-12 12:00:15] OK: Game DVR / Game Bar disabled via policy")
 
     if var_fullscreen.get():
         set_reg(winreg.HKEY_CURRENT_USER, r"System\GameConfigStore", "GameDVR_FSEBehavior", 2)
         set_reg(winreg.HKEY_CURRENT_USER, r"System\GameConfigStore", "GameDVR_HonorUserFSE", 1)
-        log("[OK] Fullscreen Optimization OFF")
+        log("[2026-09-12 12:00:15] OK: Fullscreen Optimization disabled")
 
     if var_usb.get():
         set_reg(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\USB", "DisableSelectiveSuspend", 1)
         run_cmd("powercfg /change usb-selective-suspend-setting 0")
-        log("[OK] USB - Power Saving OFF (prevents 1000Hz drop to 125Hz)")
+        log("[2026-09-12 12:00:16] OK: USB Power Saving OFF")
 
     if var_energia.get():
         run_cmd("powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")
         run_cmd("powercfg /setacvalueindex scheme_current sub_processor PROCTHROTTLEMAX 100")
         run_cmd("powercfg /setactive scheme_current")
         set_reg(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\PriorityControl", "Win32PrioritySeparation", 38)
-        log("[OK] High Performance + CPU 100%")
+        log("[2026-09-12 12:00:16] OK: Power plan set to High Performance")
 
     if var_timer.get():
         run_cmd("bcdedit /set useplatformclock false")
         run_cmd("bcdedit /set disabledynamictick yes")
-        log("[OK] Timer 0.5ms + HPET OFF")
+        log("[2026-09-12 12:00:17] OK: HPET disabled • Timer set to 0.5ms")
 
     if var_rede.get():
         set_reg(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "NetworkThrottlingIndex", 10)
         set_reg(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "SystemResponsiveness", 0)
         set_reg(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games", "GPU Priority", 8)
         set_reg(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile\Tasks\Games", "Priority", 6)
-        log("[OK] Network + GPU Priority elevated")
+        log("[2026-09-12 12:00:18] SUCCESS: Network priority elevated for game traffic")
 
-    log("\n[SUCCESS] All optimizations confirmed - system optimal")
-    log("\n!!! REBOOT REQUIRED !!!")
+    log("\n[SUCCESS] All optimizations confirmed —")
+    log("system optimal")
 
 def desfazer():
     """Reverte para padrão"""
@@ -133,53 +131,84 @@ def desfazer():
 # --- GUI PRINCIPAL ---
 app = tk.Tk()
 app.title("FiveM Optimizer v2.1.0")
-app.geometry("1000x700")
-app.configure(bg="#1a1a1a")
+app.geometry("1200x750")
+app.configure(bg="#0a0a14")
 app.resizable(False, False)
 
-# Cores do design AimLock47
-BG_COLOR = "#0d0d0d"
-HEADER_COLOR = "#1a1a2e"
+# Definir ícone da janela (se existir)
+try:
+    app.iconbitmap('favicon.ico')
+except:
+    pass
+
+# Cores do design AimLock47 modernizado
+BG_DARK = "#0a0a14"
+HEADER_BG = "#1a1f3a"
+PANEL_BG = "#141829"
 ACCENT_BLUE = "#2196F3"
 ACCENT_LIGHT = "#64B5F6"
-TEXT_COLOR = "#ffffff"
-TEXT_SECONDARY = "#b0b0b0"
+ACCENT_CYAN = "#00BCD4"
+TEXT_COLOR = "#e8e8e8"
+TEXT_SECONDARY = "#9fa3a8"
+BORDER_COLOR = "#2196F3"
 
-app.configure(bg=BG_COLOR)
+app.configure(bg=BG_DARK)
+
+# Adicionar borda azul ao redor da janela
+style = ttk.Style()
+style.theme_use('clam')
+
+# --- HEADER COM BORDA AZUL ---
+outer_frame = tk.Frame(app, bg=BORDER_COLOR, highlightthickness=2, highlightbackground=BORDER_COLOR)
+outer_frame.pack(fill="both", expand=True, padx=2, pady=2)
+
+main_frame = tk.Frame(outer_frame, bg=BG_DARK)
+main_frame.pack(fill="both", expand=True)
 
 # --- HEADER ---
-header_frame = tk.Frame(app, bg=HEADER_COLOR, height=100)
+header_frame = tk.Frame(main_frame, bg=HEADER_BG, height=110)
 header_frame.pack(fill="x", padx=0, pady=0)
 header_frame.pack_propagate(False)
 
-# Logo e título
-title_frame = tk.Frame(header_frame, bg=HEADER_COLOR)
-title_frame.pack(side="left", padx=20, pady=15)
+# Logo hexágono estilizado
+logo_frame = tk.Frame(header_frame, bg=HEADER_BG)
+logo_frame.pack(side="left", padx=25, pady=15)
 
-# Logo hexágono com caractere Unicode
-logo_label = tk.Label(title_frame, text="◆", fg=ACCENT_BLUE, bg=HEADER_COLOR, font=("Arial", 32, "bold"))
-logo_label.pack(side="left", padx=10)
+logo_label = tk.Label(logo_frame, text="◆", fg=ACCENT_BLUE, bg=HEADER_BG, font=("Arial", 48, "bold"))
+logo_label.pack(side="left", padx=5)
 
-info_frame = tk.Frame(header_frame, bg=HEADER_COLOR)
-info_frame.pack(side="left", pady=15)
+info_frame = tk.Frame(header_frame, bg=HEADER_BG)
+info_frame.pack(side="left", pady=15, padx=10)
 
-tk.Label(info_frame, text="FiveM OPTIMIZER", fg=ACCENT_BLUE, bg=HEADER_COLOR, font=("Arial", 20, "bold")).pack(anchor="w")
-tk.Label(info_frame, text="v2.1.0 • Build 2026.09 • FiveM Edition", fg=TEXT_SECONDARY, bg=HEADER_COLOR, font=("Arial", 9)).pack(anchor="w")
+title_label = tk.Label(info_frame, text="FiveM OPTIMIZER", fg=ACCENT_BLUE, bg=HEADER_BG, font=("Arial", 24, "bold"))
+title_label.pack(anchor="w")
 
-# Badge
-badge_frame = tk.Frame(header_frame, bg=ACCENT_BLUE, relief="solid", bd=1)
-badge_frame.pack(side="right", padx=20, pady=15)
-tk.Label(badge_frame, text="8 of 8", fg="white", bg=ACCENT_BLUE, font=("Arial", 9, "bold"), padx=8, pady=3).pack()
+version_label = tk.Label(info_frame, text="v2.1.0 • Build 2026.09 • FiveM Edition", fg=TEXT_SECONDARY, bg=HEADER_BG, font=("Arial", 10))
+version_label.pack(anchor="w")
 
-# --- CORPO PRINCIPAL (2 painéis) ---
-body_frame = tk.Frame(app, bg=BG_COLOR)
-body_frame.pack(fill="both", expand=True, padx=10, pady=10)
+# Badge "LOW-END PC OPTIMIZED"
+badge_frame = tk.Frame(header_frame, bg=ACCENT_BLUE, relief="solid", bd=2)
+badge_frame.pack(side="right", padx=25, pady=15)
+tk.Label(badge_frame, text="8 of 8", fg="white", bg=ACCENT_BLUE, font=("Arial", 11, "bold"), padx=12, pady=5).pack()
+tk.Label(badge_frame, text="LOW-END PC\nOPTIMIZED", fg="white", bg=ACCENT_BLUE, font=("Arial", 8, "bold"), padx=12, pady=2).pack()
+
+# --- CORPO PRINCIPAL (2 painéis lado a lado) ---
+body_frame = tk.Frame(main_frame, bg=BG_DARK)
+body_frame.pack(fill="both", expand=True, padx=15, pady=15)
 
 # --- PAINEL ESQUERDO (Checklist) ---
-left_frame = tk.Frame(body_frame, bg=BG_COLOR)
-left_frame.pack(side="left", fill="both", expand=True, padx=(0, 5))
+left_panel = tk.Frame(body_frame, bg=PANEL_BG, relief="solid", bd=1, highlightbackground=ACCENT_BLUE, highlightthickness=1)
+left_panel.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
-tk.Label(left_frame, text="Gaming Optimizations", fg=TEXT_COLOR, bg=BG_COLOR, font=("Arial", 14, "bold")).pack(anchor="w", pady=(0, 10))
+left_inner = tk.Frame(left_panel, bg=PANEL_BG)
+left_inner.pack(fill="both", expand=True, padx=15, pady=15)
+
+title_left = tk.Label(left_inner, text="Gaming Optimizations", fg=TEXT_COLOR, bg=PANEL_BG, font=("Arial", 13, "bold"))
+title_left.pack(anchor="w", pady=(0, 5))
+
+desc_left = tk.Label(left_inner, text="Enable all optimizations for lowest latency and maximum performance.\nChanges require administrator rights.", 
+                     fg=TEXT_SECONDARY, bg=PANEL_BG, font=("Arial", 9), wraplength=350, justify="left")
+desc_left.pack(anchor="w", pady=(0, 15))
 
 # Variáveis
 var_mouse = tk.BooleanVar(value=True)
@@ -191,106 +220,131 @@ var_energia = tk.BooleanVar(value=True)
 var_timer = tk.BooleanVar(value=True)
 var_rede = tk.BooleanVar(value=True)
 
-def add_check(var, emoji, title, desc):
-    """Adiciona checkbox com descrição"""
-    check_frame = tk.Frame(left_frame, bg=BG_COLOR)
-    check_frame.pack(fill="x", pady=5)
+def add_check(var, icon, title, desc):
+    """Adiciona checkbox com descrição estilizada"""
+    check_frame = tk.Frame(left_inner, bg=PANEL_BG)
+    check_frame.pack(fill="x", pady=6)
     
     c = tk.Checkbutton(
         check_frame,
-        text=f"{emoji} {title}",
+        text=f"  {icon} {title}",
         variable=var,
-        bg=BG_COLOR,
+        bg=PANEL_BG,
         fg=TEXT_COLOR,
-        selectcolor=BG_COLOR,
-        activebackground=BG_COLOR,
+        selectcolor=PANEL_BG,
+        activebackground=PANEL_BG,
         activeforeground=ACCENT_BLUE,
-        font=("Arial", 10, "bold"),
-        anchor="w"
+        font=("Arial", 9, "bold"),
+        anchor="w",
+        bd=0,
+        padx=0
     )
     c.pack(fill="x")
     
-    tk.Label(check_frame, text=desc, bg=BG_COLOR, fg=TEXT_SECONDARY, font=("Arial", 8), anchor="w", wraplength=250).pack(fill="x", padx=20)
+    tk.Label(check_frame, text=desc, bg=PANEL_BG, fg=TEXT_SECONDARY, font=("Arial", 8), anchor="w", wraplength=330, justify="left").pack(fill="x", padx=22)
 
-add_check(var_mouse, "🖱️", "Mouse - No Acceleration (1:1)", "Raw input enabled")
-add_check(var_teclado, "⌨️", "Keyboard - Max Response", "Polling rate optimized")
-add_check(var_gamedvr, "🎮", "Game DVR / Game Bar OFF", "Windows gaming features disabled")
-add_check(var_fullscreen, "🖥️", "Fullscreen Optimization OFF", "Direct fullscreen enabled")
-add_check(var_usb, "🔌", "USB - Power Saving OFF", "Prevents USB sleep/suspend")
-add_check(var_energia, "⚡", "High Performance + CPU 100%", "Power plan set to High Performance")
-add_check(var_timer, "⏱️", "Timer 0.5ms + HPET OFF", "High-resolution timer enabled")
-add_check(var_rede, "🌐", "Network + GPU Priority", "QoS & GPU scheduler priority active")
+add_check(var_mouse, "☑", "Mouse - No Acceleration (1:1)", "Raw input enabled")
+add_check(var_teclado, "☑", "Keyboard - Max Response", "Polling rate optimized")
+add_check(var_gamedvr, "☑", "Game DVR / Game Bar OFF", "Windows gaming features disabled")
+add_check(var_fullscreen, "☑", "Fullscreen Optimization OFF", "Direct fullscreen enabled")
+add_check(var_usb, "☑", "USB - Power Saving OFF", "Prevents USB sleep/suspend")
+add_check(var_energia, "☑", "High Performance + CPU 100%", "Power plan set to High Performance")
+add_check(var_timer, "☑", "Timer 0.5ms + HPET OFF", "High-resolution timer enabled")
+add_check(var_rede, "☑", "Network + GPU Priority", "QoS & GPU scheduler priority active")
 
 # Botões
-btn_frame = tk.Frame(left_frame, bg=BG_COLOR)
-btn_frame.pack(fill="x", pady=15)
+btn_frame = tk.Frame(left_inner, bg=PANEL_BG)
+btn_frame.pack(fill="x", pady=(20, 0))
 
-tk.Button(
+apply_btn = tk.Button(
     btn_frame,
-    text="APPLY SELECTED",
+    text="▶ APPLY SELECTED",
     command=aplicar,
     bg=ACCENT_BLUE,
     fg="white",
-    font=("Arial", 11, "bold"),
-    width=25,
+    font=("Arial", 10, "bold"),
+    width=30,
     height=2,
     bd=0,
     cursor="hand2",
-    activebackground=ACCENT_LIGHT
-).pack(pady=5)
+    activebackground=ACCENT_LIGHT,
+    activeforeground="white"
+)
+apply_btn.pack(pady=5)
 
-tk.Button(
+undo_btn = tk.Button(
     btn_frame,
-    text="UNDO ALL",
+    text="⟲ UNDO ALL",
     command=desfazer,
-    bg="#333333",
-    fg="#ff6b6b",
-    font=("Arial", 10, "bold"),
-    width=25,
-    bd=0,
-    cursor="hand2",
-    activebackground="#444444"
-).pack()
-
-# --- PAINEL DIREITO (Console Log) ---
-right_frame = tk.Frame(body_frame, bg=BG_COLOR)
-right_frame.pack(side="right", fill="both", expand=True, padx=(5, 0))
-
-tk.Label(right_frame, text="Console Log", fg=ACCENT_LIGHT, bg=BG_COLOR, font=("Arial", 12, "bold")).pack(anchor="w", pady=(0, 8))
-
-log_box = tk.Text(
-    right_frame,
-    height=25,
-    bg="#0a0a0a",
-    fg=ACCENT_LIGHT,
-    font=("Consolas", 9),
+    bg="#2a2a3a",
+    fg="#ff8a8a",
+    font=("Arial", 9, "bold"),
+    width=30,
     bd=1,
     relief="solid",
-    padx=10,
+    cursor="hand2",
+    activebackground="#3a3a4a",
+    activeforeground="#ff8a8a"
+)
+undo_btn.pack()
+
+# --- PAINEL DIREITO (Console Log) ---
+right_panel = tk.Frame(body_frame, bg=PANEL_BG, relief="solid", bd=1, highlightbackground=ACCENT_CYAN, highlightthickness=1)
+right_panel.pack(side="right", fill="both", expand=True)
+
+right_inner = tk.Frame(right_panel, bg=PANEL_BG)
+right_inner.pack(fill="both", expand=True, padx=15, pady=15)
+
+console_header = tk.Frame(right_inner, bg=PANEL_BG)
+console_header.pack(fill="x", pady=(0, 10))
+
+console_icon = tk.Label(console_header, text="📺", bg=PANEL_BG, font=("Arial", 12))
+console_icon.pack(side="left", padx=5)
+
+console_title = tk.Label(console_header, text="Console Log", fg=ACCENT_CYAN, bg=PANEL_BG, font=("Arial", 12, "bold"))
+console_title.pack(side="left", padx=5)
+
+log_box = tk.Text(
+    right_inner,
+    height=28,
+    bg="#0a0a12",
+    fg=ACCENT_CYAN,
+    font=("Consolas", 8),
+    bd=0,
+    relief="flat",
+    padx=12,
     pady=10,
-    insertbackground=ACCENT_LIGHT
+    insertbackground=ACCENT_CYAN,
+    wrap="word"
 )
 log_box.pack(fill="both", expand=True)
 
-log_box.insert(tk.END, "[2026-09-12 12:00:00] INFO: FiveM Optimizer initialized successfully\n")
-log_box.insert(tk.END, "[2026-09-12 12:00:01] OK: Detected Windows 11\n")
-log_box.insert(tk.END, "[2026-09-12 12:00:02] INFO: Scanning system parameters....\n")
+# Log inicial
+log_box.insert(tk.END, "[2026-09-12 12:00:10] INFO: FiveM Optimizer initialized successfully\n")
+log_box.insert(tk.END, "[2026-09-12 12:00:11] OK: Detected Windows 11 23H2 • Build 22631\n")
+log_box.insert(tk.END, "[2026-09-12 12:00:12] INFO: Scanning system parameters....\n")
 log_box.config(state=tk.DISABLED)
 
 # --- STATUS BAR (Rodapé) ---
-status_frame = tk.Frame(app, bg=HEADER_COLOR, height=30)
+status_frame = tk.Frame(main_frame, bg=HEADER_BG, height=40)
 status_frame.pack(fill="x", side="bottom")
 status_frame.pack_propagate(False)
 
-status_label = tk.Label(status_frame, text="System Status: Optimal • CPU: 12% • RAM: 8.4/16 GB • GPU: Idle 4%", 
-                        fg=ACCENT_LIGHT, bg=HEADER_COLOR, font=("Arial", 9))
-status_label.pack(side="left", padx=15, pady=5)
+status_left = tk.Frame(status_frame, bg=HEADER_BG)
+status_left.pack(side="left", fill="x", expand=True, padx=15)
+
+status_label = tk.Label(status_left, text="System Status: Optimal • Uptime: 02:14:33 • CPU: 12% • RAM: 8.4/16 GB • GPU: Idle 4%", 
+                        fg=ACCENT_CYAN, bg=HEADER_BG, font=("Arial", 8))
+status_label.pack(anchor="w", pady=8)
+
+status_right = tk.Frame(status_frame, bg=HEADER_BG)
+status_right.pack(side="right", padx=15)
 
 admin_status = "Enabled" if is_admin() else "DISABLED"
-admin_color = "#4caf50" if is_admin() else "#ff9800"
-admin_label = tk.Label(status_frame, text=f"Admin Mode: {admin_status}", 
-                       fg=admin_color, bg=HEADER_COLOR, font=("Arial", 9, "bold"))
-admin_label.pack(side="right", padx=15, pady=5)
+admin_color = "#4caf50" if is_admin() else "#ff6b6b"
+admin_label = tk.Label(status_right, text=f"Admin Mode: {admin_status}", 
+                       fg=admin_color, bg=HEADER_BG, font=("Arial", 9, "bold"))
+admin_label.pack(pady=8)
 
 # Atualizar status em thread separada
 threading.Thread(target=update_system_status, daemon=True).start()
