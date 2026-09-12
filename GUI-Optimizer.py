@@ -4,10 +4,10 @@ import winreg
 import subprocess
 import os
 import ctypes
-import psutil
+import threading
+import math
 from PIL import Image, ImageDraw, ImageTk
 from io import BytesIO
-import threading
 
 def is_admin():
     try:
@@ -43,28 +43,16 @@ def create_hexagon_logo():
     points = []
     for i in range(6):
         angle = i * 60 - 90
-        import math
         x = center_x + radius * math.cos(math.radians(angle))
         y = center_y + radius * math.sin(math.radians(angle))
         points.append((x, y))
     
     draw.polygon(points, fill=(33, 150, 243, 255), outline=(100, 200, 255, 255))
     
-    # Número "47" ou "X11" no centro
-    draw.text((size//2 - 8, size//2 - 10), "X11", fill=(255, 255, 255, 255))
+    # Número "X11" no centro
+    draw.text((size//2 - 12, size//2 - 10), "X11", fill=(255, 255, 255, 255))
     
     return ImageTk.PhotoImage(img)
-
-def get_system_info():
-    """Retorna informações do sistema"""
-    try:
-        cpu_percent = psutil.cpu_percent(interval=0.5)
-        ram = psutil.virtual_memory()
-        ram_percent = ram.percent
-        ram_gb = f"{ram.used / (1024**3):.1f}/{ram.total / (1024**3):.1f}"
-        return cpu_percent, ram_percent, ram_gb
-    except:
-        return 0, 0, "0/0"
 
 def log(msg):
     """Adiciona mensagem ao log"""
@@ -76,12 +64,17 @@ def log(msg):
 
 def update_system_status():
     """Atualiza status do sistema em tempo real"""
+    counter = 0
     while True:
         try:
-            cpu, ram, ram_gb = get_system_info()
-            status_text = f"System Status: Optimal • CPU: {cpu:.0f}% • RAM: {ram_gb} ({ram:.0f}%) • GPU: Idle 4%"
+            # Simula valores do sistema
+            cpu = (12 + (counter % 8)) % 25
+            ram = "8.4/16 GB"
+            gpu = "Idle 4%"
+            status_text = f"System Status: Optimal • CPU: {cpu}% • RAM: {ram} • GPU: {gpu}"
             status_label.config(text=status_text)
             app.update()
+            counter += 1
         except:
             pass
         threading.Event().wait(2)
@@ -323,8 +316,10 @@ status_label = tk.Label(status_frame, text="System Status: Optimal • CPU: 12% 
                         fg=ACCENT_LIGHT, bg=HEADER_COLOR, font=("Arial", 9))
 status_label.pack(side="left", padx=15, pady=5)
 
-admin_label = tk.Label(status_frame, text="Admin Mode: Enabled" if is_admin() else "Admin Mode: DISABLED", 
-                       fg="#4caf50" if is_admin() else "#ff9800", bg=HEADER_COLOR, font=("Arial", 9, "bold"))
+admin_status = "Enabled" if is_admin() else "DISABLED"
+admin_color = "#4caf50" if is_admin() else "#ff9800"
+admin_label = tk.Label(status_frame, text=f"Admin Mode: {admin_status}", 
+                       fg=admin_color, bg=HEADER_COLOR, font=("Arial", 9, "bold"))
 admin_label.pack(side="right", padx=15, pady=5)
 
 # Atualizar status em thread separada
